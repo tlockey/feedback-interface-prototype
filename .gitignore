@@ -4,3 +4,5 @@
 /jwt-server/package-lock.json
 /feedback-interface/.gitignore
 /feedback-interface/package-lock.json
+.DS_Store
+**/.DS_Store

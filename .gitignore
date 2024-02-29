@@ -1,0 +1,6 @@
+/client-app-dummy
+/jwt-server/node_modules
+/jwt-server/ben.private-key.pem
+/jwt-server/package-lock.json
+/feedback-interface/.gitignore
+/feedback-interface/package-lock.json

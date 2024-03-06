@@ -8,18 +8,31 @@ import {
   useParams,
 } from "react-router-dom";
 
-const pullRequestCommentsLink =
-  "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments";
 const installationLink = "https://api.github.com/orgs/rainbucket-xyz/installation";
 const jwtLink = "http://localhost:3002/jwt";
 
-async function getComments() {
-  let response = await axios.get(pullRequestCommentsLink);
-  response = response.data;
-  return response.map((comment) => ({
-    body: comment.body,
-    user: comment.user.login,
-  }));
+async function getUrlAndCommentsById(id) {
+  try {
+    const urlResponse = await axios.get(`http://localhost:3001/api/preview/${id}`);
+    const commentsResponse = await axios.get(`http://localhost:3001/api/comments/${id}`);
+    return { appLink: urlResponse.data.url, commentsLink: commentsResponse.data.prLink };
+  } catch (error) {
+    console.error("Error fetching data by ID:", error);
+    return { appLink: "default fallback URL", commentsLink: "default fallback PR comments link" };
+  }
+}
+
+async function getComments(commentsLink) {
+  try {
+    const response = await axios.get(commentsLink);
+    return response.data.map(comment => ({
+      body: comment.body,
+      user: comment.user.login,
+    }));
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return []; 
+  }
 }
 
 async function generateToken() {
@@ -51,45 +64,34 @@ async function getAuthentication() {
   return response.data.token;
 }
 
-async function postComment(comment) {
+async function postComment(comment, commentsLink) {
   let authorization = await getAuthentication();
   let headers = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     Authorization: `Bearer ${authorization}`,
   };
-  await axios.post(
-    pullRequestCommentsLink,
-    { body: comment },
-    { headers }
-  );
-}
-
-async function getUrlById(id) {
-  try {
-    const response = await axios.get(`http://localhost:3001/api/preview/${id}`);
-    return response.data.url;
-  } catch (error) {
-    console.error("Error fetching URL by ID:", error);
-    return "https://zipxam.com/404"; // example 404 page (i.e. fallback URL if underlying page doesn't load)
-  }
+  await axios.post(commentsLink, { body: comment }, { headers });
 }
 
 function PreviewEnvironment() {
   const { id } = useParams();
   const [appLink, setAppLink] = useState("");
+  const [commentsLink, setCommentsLink] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-    getUrlById(id).then(setAppLink);
-    getComments().then(setComments);
-    getAuthentication();
+    getUrlAndCommentsById(id).then(({ appLink, commentsLink }) => {
+      setAppLink(appLink);
+      setCommentsLink(commentsLink);
+      getComments(commentsLink).then(setComments);
+    });
   }, [id]);
 
   const onCreateComment = async (e) => {
     e.preventDefault();
-    await postComment(newComment);
+    await postComment(newComment, commentsLink);
     setNewComment("");
   };
 

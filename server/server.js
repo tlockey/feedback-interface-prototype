@@ -10,6 +10,13 @@ const idToUrlMap = {
   "66xx61": "https://example.com"
 };
 
+const idToPrMap = {
+  // '12jk34': 'https://api.github.com/repos/example-repo/example/issues/1/comments',
+  // "36wl45": "https://api.github.com/repos/example-repo/example/issues/2/comments",
+  "99ab21": "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments",
+  "66xx61": "https://api.github.com/repos/treskey/feedback-interface-prototype/issues/1/comments"
+};
+
 app.use(express.json());
 app.use(cors());
 
@@ -25,4 +32,14 @@ app.get('/api/preview/:id', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
+});
+
+app.get('/api/comments/:id', (req, res) => {
+  const { id } = req.params;
+  const prLink = idToPrMap[id];
+  if (prLink) {
+    res.json({ prLink });
+  } else {
+    res.status(404).send('Comments Not Found');
+  }
 });

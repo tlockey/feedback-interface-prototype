@@ -18,7 +18,7 @@ async function getUrlAndCommentsById(id) {
     return { appLink: urlResponse.data.url, commentsLink: commentsResponse.data.prLink };
   } catch (error) {
     // console.error("Error fetching data by ID:", error);
-    return { appLink: "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw", commentsLink: "default fallback PR comments link" };
+    return { appLink: "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" };
   }
 }
 

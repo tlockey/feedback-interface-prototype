@@ -17,8 +17,8 @@ async function getUrlAndCommentsById(id) {
     const commentsResponse = await axios.get(`http://localhost:3001/api/comments/${id}`);
     return { appLink: urlResponse.data.url, commentsLink: commentsResponse.data.prLink };
   } catch (error) {
-    console.error("Error fetching data by ID:", error);
-    return { appLink: "default fallback URL", commentsLink: "default fallback PR comments link" };
+    // console.error("Error fetching data by ID:", error);
+    return { appLink: "https://zipxam.com/404", commentsLink: "default fallback PR comments link" };
   }
 }
 
@@ -80,39 +80,58 @@ function PreviewEnvironment() {
   const [commentsLink, setCommentsLink] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [showComments, setShowComments] = useState(false); 
 
   useEffect(() => {
-    getUrlAndCommentsById(id).then(({ appLink, commentsLink }) => {
-      setAppLink(appLink);
-      setCommentsLink(commentsLink);
-      getComments(commentsLink).then(setComments);
+    getUrlAndCommentsById(id).then(data => {
+      setAppLink(data.appLink);
+      if (data.appLink !== "https://zipxam.com/404" && data.commentsLink) {
+        setCommentsLink(data.commentsLink);
+        setShowComments(true);
+        getComments(data.commentsLink)
+          .then(setComments)
+          .catch(err => {
+            console.error("Error fetching comments:", err);
+          });
+      } else {
+        setShowComments(false);
+      }
+    }).catch(err => {
+      console.error("Error fetching preview environment data:", err);
+      setShowComments(false);
+      setAppLink("https://zipxam.com/404");
     });
   }, [id]);
 
   const onCreateComment = async (e) => {
     e.preventDefault();
-    await postComment(newComment, commentsLink);
-    setNewComment("");
+    if (commentsLink && showComments) {
+      await postComment(newComment, commentsLink);
+      setNewComment("");
+      getComments(commentsLink).then(setComments);
+    }
   };
 
   return (
     <>
-      <div id="comments">
-        <h1>Comments</h1>
-        {comments.map(({ body, user }, idx) => (
-          <Comment user={user} comment={body} key={idx} />
-        ))}
-        <form onSubmit={onCreateComment}>
-          <label htmlFor="newComment">New Comment:</label>
-          <input
-            id="newComment"
-            type="text"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
-          <button type="submit">Post Comment</button>
-        </form>
-      </div>
+      {showComments && (
+        <div id="comments">
+          <h1>Comments</h1>
+          {comments.map(({ body, user }, idx) => (
+            <Comment user={user} comment={body} key={idx} />
+          ))}
+          <form onSubmit={onCreateComment}>
+            <label htmlFor="newComment">New Comment:</label>
+            <input
+              id="newComment"
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
+            <button type="submit">Post Comment</button>
+          </form>
+        </div>
+      )}
       <iframe src={appLink} title="Preview"></iframe>
     </>
   );

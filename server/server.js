@@ -4,15 +4,15 @@ const app = express();
 const port = 3001;
 
 const idToUrlMap = {
-  '12jk34': 'https://zipxam.com',
+  "12jk34": "https://zipxam.com",
   "36wl45": "https://westonludeke.com",
   "99ab21": "https://rainbucket.xyz",
   "66xx61": "https://example.com"
 };
 
 const idToPrMap = {
-  // '12jk34': 'https://api.github.com/repos/example-repo/example/issues/1/comments',
-  // "36wl45": "https://api.github.com/repos/example-repo/example/issues/2/comments",
+  // "12jk34": "",
+  // "36wl45": "",
   "99ab21": "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments",
   "66xx61": "https://api.github.com/repos/treskey/feedback-interface-prototype/issues/1/comments"
 };

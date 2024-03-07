@@ -18,7 +18,7 @@ async function getUrlAndCommentsById(id) {
     return { appLink: urlResponse.data.url, commentsLink: commentsResponse.data.prLink };
   } catch (error) {
     // console.error("Error fetching data by ID:", error);
-    return { appLink: "https://zipxam.com/404", commentsLink: "default fallback PR comments link" };
+    return { appLink: "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw", commentsLink: "default fallback PR comments link" };
   }
 }
 
@@ -85,7 +85,7 @@ function PreviewEnvironment() {
   useEffect(() => {
     getUrlAndCommentsById(id).then(data => {
       setAppLink(data.appLink);
-      if (data.appLink !== "https://zipxam.com/404" && data.commentsLink) {
+      if (data.appLink !== "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" && data.commentsLink) {
         setCommentsLink(data.commentsLink);
         setShowComments(true);
         getComments(data.commentsLink)
@@ -99,7 +99,7 @@ function PreviewEnvironment() {
     }).catch(err => {
       console.error("Error fetching preview environment data:", err);
       setShowComments(false);
-      setAppLink("https://zipxam.com/404");
+      setAppLink("http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw");
     });
   }, [id]);
 

@@ -7,7 +7,7 @@ const idToUrlMap = {
   // "12jk34": "https://zipxam.com",
   // "36wl45": "https://example.com",
   // "99ab21": "https://rainbucket.xyz",
-  "66xx61": "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/preview/123"
+  "66xx61": "http://client-app.preview.icyntkt.xyz/"
 };
 
 const idToPrMap = {

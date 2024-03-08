@@ -4,17 +4,17 @@ const app = express();
 const port = 3001;
 
 const idToUrlMap = {
-  "12jk34": "https://zipxam.com",
-  "36wl45": "https://westonludeke.com",
-  "99ab21": "https://rainbucket.xyz",
-  "66xx61": "https://example.com"
+  // "12jk34": "https://zipxam.com",
+  // "36wl45": "https://example.com",
+  // "99ab21": "https://rainbucket.xyz",
+  "66xx61": "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/preview/123"
 };
 
 const idToPrMap = {
-  "12jk34": "https://api.github.com/repos/rainbucket-xyz/testing/issues/5/comments",
+  // "12jk34": "https://api.github.com/repos/rainbucket-xyz/testing/issues/5/comments",
   // "36wl45": "https://api.github.com/repos/rainbucket-xyz/testing/issues/5/comments",
-  "99ab21": "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments",
-  "66xx61": "https://api.github.com/repos/rainbucket-xyz/testing/issues/4/comments"
+  // "99ab21": "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments",
+  "66xx61": "https://api.github.com/repos/preview-app-team5/client-app/issues/30/comments"
 };
 
 app.use(express.json());

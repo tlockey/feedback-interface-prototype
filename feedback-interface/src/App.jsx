@@ -8,7 +8,8 @@ import {
   useParams,
 } from "react-router-dom";
 
-const installationLink = "https://api.github.com/orgs/rainbucket-xyz/installation";
+// const installationLink = "https://api.github.com/orgs/rainbucket-xyz/installation";
+const installationLink = "https://api.github.com/orgs/preview-app-team5/installation";
 const jwtLink = "http://localhost:3002/jwt";
 
 async function getUrlAndCommentsById(id) {

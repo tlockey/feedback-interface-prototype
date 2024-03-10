@@ -4,7 +4,7 @@ const app = express();
 const port = 3001;
 
 const idToUrlMap = {
-  // "12jk34": "https://zipxam.com",
+  // "12jk34": "https://westonludeke.com",
   // "36wl45": "https://example.com",
   // "99ab21": "https://rainbucket.xyz",
   "66xx61": "http://client-app.preview.icyntkt.xyz/"

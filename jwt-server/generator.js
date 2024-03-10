@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 
-const APP_ID = "843556"; // make a request (CURRENTLY FROM APP PAGE) maybe through GET https://api.github.com/orgs/rainbucket-xyz/installation
+// const APP_ID = "843556"; // make a request (CURRENTLY FROM APP PAGE) maybe through GET https://api.github.com/orgs/rainbucket-xyz/installation
+const APP_ID = "851083";
 const ALGO = "RS256";
 const PRIVATE_KEY_LOCATION = "./ben.private-key.pem"; // verify if .private-key required for file name
 const TEN_MINUTES_IN_SECONDS = 600;

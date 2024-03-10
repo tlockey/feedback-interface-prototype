@@ -1,28 +1,43 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
 
-const appLink = "https://rainbucket.xyz/";
-const pullRequestCommentsLink =
-  "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments";
-
-const installationLink =
-  "https://api.github.com/orgs/rainbucket-xyz/installation";
-
+// const installationLink = "https://api.github.com/orgs/rainbucket-xyz/installation";
+const installationLink = "https://api.github.com/orgs/preview-app-team5/installation";
 const jwtLink = "http://localhost:3002/jwt";
 
-async function getComments() {
-  let response = await axios.get(pullRequestCommentsLink);
-  response = response.data;
-  return response.map((comment) => ({
-    body: comment.body,
-    user: comment.user.login,
-  }));
+async function getUrlAndCommentsById(id) {
+  try {
+    const urlResponse = await axios.get(`http://localhost:3001/api/preview/${id}`);
+    const commentsResponse = await axios.get(`http://localhost:3001/api/comments/${id}`);
+    return { appLink: urlResponse.data.url, commentsLink: commentsResponse.data.prLink };
+  } catch (error) {
+    // console.error("Error fetching data by ID:", error);
+    return { appLink: "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" };
+  }
+}
+
+async function getComments(commentsLink) {
+  try {
+    const response = await axios.get(commentsLink);
+    return response.data.map(comment => ({
+      body: comment.body,
+      user: comment.user.login,
+    }));
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return []; 
+  }
 }
 
 async function generateToken() {
   const response = await axios.get(jwtLink);
-  console.log(response.data);
   const { jwt } = response.data;
   return jwt;
 }
@@ -33,93 +48,92 @@ async function getInstallationID(jwt) {
     "X-GitHub-Api-Version": "2022-11-28",
     Authorization: `Bearer ${jwt}`,
   };
-
-  // Get installation ID
   let response = await axios.get(installationLink, { headers });
   return response.data.id;
 }
 
 async function getAuthentication() {
-  // Get JWT Token
   const jwt = await generateToken();
-  console.log("generated jwtToken: ", jwt);
-
-  // get installation id using jwt
   const installationID = await getInstallationID(jwt);
-  console.log("installationID: ", installationID);
-
   const headers = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     Authorization: `Bearer ${jwt}`,
   };
-
-  // get installation access token
   const installationAccessTokenLink = `https://api.github.com/app/installations/${installationID}/access_tokens`;
-
-  let response = await axios.post(installationAccessTokenLink, null, {
-    headers,
-  });
-
-  console.log(response.data);
+  let response = await axios.post(installationAccessTokenLink, null, { headers });
   return response.data.token;
 }
 
-async function postComment(comment) {
+async function postComment(comment, commentsLink) {
   let authorization = await getAuthentication();
-  console.log("authorization: ", authorization);
   let headers = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     Authorization: `Bearer ${authorization}`,
   };
-  let response = await axios.post(
-    pullRequestCommentsLink,
-    { body: comment },
-    { headers }
-  );
-  // probably update the comments in our preview interface
+  await axios.post(commentsLink, { body: comment }, { headers });
 }
 
-function App() {
+function PreviewEnvironment() {
+  const { id } = useParams();
+  const [appLink, setAppLink] = useState("");
+  const [commentsLink, setCommentsLink] = useState("");
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [showComments, setShowComments] = useState(false); 
 
   useEffect(() => {
-    getComments().then((comments) => setComments(comments));
-    getAuthentication();
-  }, []);
+    getUrlAndCommentsById(id).then(data => {
+      setAppLink(data.appLink);
+      if (data.appLink !== "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" && data.commentsLink) {
+        setCommentsLink(data.commentsLink);
+        setShowComments(true);
+        getComments(data.commentsLink)
+          .then(setComments)
+          .catch(err => {
+            console.error("Error fetching comments:", err);
+          });
+      } else {
+        setShowComments(false);
+      }
+    }).catch(err => {
+      console.error("Error fetching preview environment data:", err);
+      setShowComments(false);
+      setAppLink("http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw");
+    });
+  }, [id]);
 
   const onCreateComment = async (e) => {
     e.preventDefault();
-    await postComment(newComment);
-    setNewComment("");
+    if (commentsLink && showComments) {
+      await postComment(newComment, commentsLink);
+      setNewComment("");
+      getComments(commentsLink).then(setComments);
+    }
   };
 
   return (
     <>
-      <div id="comments">
-        <h1>Comments</h1>
-
-        {comments.map(({ body, user }, idx) => (
-          <Comment user={user} comment={body} key={idx} />
-        ))}
-
-        <form onSubmit={onCreateComment}>
-          <label for="newComment">New Comment: </label>
-          <input
-            id="newComment"
-            type="text"
-            value={newComment}
-            onChange={(e) => {
-              setNewComment(e.target.value);
-            }}
-          />
-          <button type="submit">Post Comment</button>
-        </form>
-      </div>
-
-      <iframe src={appLink}></iframe>
+      {showComments && (
+        <div id="comments">
+          <h1>Comments</h1>
+          {comments.map(({ body, user }, idx) => (
+            <Comment user={user} comment={body} key={idx} />
+          ))}
+          <form onSubmit={onCreateComment}>
+            <label htmlFor="newComment">New Comment:</label>
+            <input
+              id="newComment"
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
+            <button type="submit">Post Comment</button>
+          </form>
+        </div>
+      )}
+      <iframe src={appLink} title="Preview"></iframe>
     </>
   );
 }
@@ -127,11 +141,19 @@ function App() {
 function Comment({ user, comment }) {
   return (
     <>
-      <p>
-        {comment} -{user}
-      </p>
+      <p>{comment} - {user}</p>
       <hr />
     </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/preview/:id" element={<PreviewEnvironment />} />
+      </Routes>
+    </Router>
   );
 }
 

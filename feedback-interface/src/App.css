@@ -11,6 +11,9 @@ html {
 
 #comments {
   background-color: white;
+  border: 0.1rem solid black;
+  border-radius: 10px;
+  font-family: sans-serif;
   margin-top: 20px;
   margin-left: 20px;
   position: absolute;

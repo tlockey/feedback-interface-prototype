@@ -14,7 +14,7 @@ const idToPrMap = {
   // "12jk34": "https://api.github.com/repos/rainbucket-xyz/testing/issues/5/comments",
   // "36wl45": "https://api.github.com/repos/rainbucket-xyz/testing/issues/5/comments",
   // "99ab21": "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments",
-  "66xx61": "https://api.github.com/repos/preview-app-team5/client-app/issues/30/comments"
+  "66xx61": "https://api.github.com/repos/preview-app-team5/client-app/issues/41/comments"
 };
 
 app.use(express.json());

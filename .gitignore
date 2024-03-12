@@ -5,6 +5,8 @@
 /jwt-server/ben.private-key.pem
 /jwt-server/package-lock.json
 /feedback-interface/.gitignore
+/feedback-interface/ben/ben.private-key.pem
+/feedback-interface/ben/.env
 /feedback-interface/package-lock.json
 /feedback-interface/node_modules
 .DS_Store

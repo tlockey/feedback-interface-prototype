@@ -9,30 +9,41 @@ import {
 } from "react-router-dom";
 
 // const installationLink = "https://api.github.com/orgs/rainbucket-xyz/installation";
-const installationLink = "https://api.github.com/orgs/preview-app-team5/installation";
+const installationLink =
+  "https://api.github.com/orgs/preview-app-team5/installation";
 const jwtLink = "http://localhost:3002/jwt";
 
 async function getUrlAndCommentsById(id) {
   try {
-    const urlResponse = await axios.get(`http://localhost:3001/api/preview/${id}`);
-    const commentsResponse = await axios.get(`http://localhost:3001/api/comments/${id}`);
-    return { appLink: urlResponse.data.url, commentsLink: commentsResponse.data.prLink };
+    const urlResponse = await axios.get(
+      `http://localhost:3001/api/preview/${id}`
+    );
+    const commentsResponse = await axios.get(
+      `http://localhost:3001/api/comments/${id}`
+    );
+    return {
+      appLink: urlResponse.data.url,
+      commentsLink: commentsResponse.data.prLink,
+    };
   } catch (error) {
     // console.error("Error fetching data by ID:", error);
-    return { appLink: "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" };
+    return {
+      appLink:
+        "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw",
+    };
   }
 }
 
 async function getComments(commentsLink) {
   try {
     const response = await axios.get(commentsLink);
-    return response.data.map(comment => ({
+    return response.data.map((comment) => ({
       body: comment.body,
       user: comment.user.login,
     }));
   } catch (error) {
     console.error("Error fetching comments:", error);
-    return []; 
+    return [];
   }
 }
 
@@ -61,7 +72,9 @@ async function getAuthentication() {
     Authorization: `Bearer ${jwt}`,
   };
   const installationAccessTokenLink = `https://api.github.com/app/installations/${installationID}/access_tokens`;
-  let response = await axios.post(installationAccessTokenLink, null, { headers });
+  let response = await axios.post(installationAccessTokenLink, null, {
+    headers,
+  });
   return response.data.token;
 }
 
@@ -81,27 +94,35 @@ function PreviewEnvironment() {
   const [commentsLink, setCommentsLink] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [showComments, setShowComments] = useState(false); 
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
-    getUrlAndCommentsById(id).then(data => {
-      setAppLink(data.appLink);
-      if (data.appLink !== "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" && data.commentsLink) {
-        setCommentsLink(data.commentsLink);
-        setShowComments(true);
-        getComments(data.commentsLink)
-          .then(setComments)
-          .catch(err => {
-            console.error("Error fetching comments:", err);
-          });
-      } else {
+    getUrlAndCommentsById(id)
+      .then((data) => {
+        setAppLink(data.appLink);
+        if (
+          data.appLink !==
+            "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" &&
+          data.commentsLink
+        ) {
+          setCommentsLink(data.commentsLink);
+          setShowComments(true);
+          getComments(data.commentsLink)
+            .then(setComments)
+            .catch((err) => {
+              console.error("Error fetching comments:", err);
+            });
+        } else {
+          setShowComments(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching preview environment data:", err);
         setShowComments(false);
-      }
-    }).catch(err => {
-      console.error("Error fetching preview environment data:", err);
-      setShowComments(false);
-      setAppLink("http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw");
-    });
+        setAppLink(
+          "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw"
+        );
+      });
   }, [id]);
 
   const onCreateComment = async (e) => {
@@ -141,7 +162,9 @@ function PreviewEnvironment() {
 function Comment({ user, comment }) {
   return (
     <>
-      <p>{comment} - {user}</p>
+      <p>
+        {comment} - {user}
+      </p>
       <hr />
     </>
   );

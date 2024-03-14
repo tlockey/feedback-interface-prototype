@@ -1,9 +1,5 @@
-/client-app-dummy
 /github-app-installer/node_modules
 /github-app-installer/outputs
-/jwt-server/node_modules
-/jwt-server/ben.private-key.pem
-/jwt-server/package-lock.json
 /feedback-interface/.gitignore
 /feedback-interface/ben/ben.private-key.pem
 /feedback-interface/ben/.env

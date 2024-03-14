@@ -11,3 +11,4 @@
 /feedback-interface/node_modules
 .DS_Store
 **/.DS_Store
+/feedback-interface/.env

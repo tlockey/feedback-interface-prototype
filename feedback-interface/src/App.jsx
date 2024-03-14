@@ -11,84 +11,21 @@ import {
 const SUBDOMAIN = import.meta.env.VITE_SUBDOMAIN;
 const USER_DOMAIN = import.meta.env.VITE_USER_DOMAIN;
 
-// function PreviewEnvironment() {
-//   const { id } = useParams();
-//   const [appLink, setAppLink] = useState("");
-//   const [commentsLink, setCommentsLink] = useState("");
-//   const [comments, setComments] = useState([]);
-//   const [newComment, setNewComment] = useState("");
-//   const [showComments, setShowComments] = useState(false);
+function FeedbackInterface({ repo, issue_number, comments, setComments }) {
+  const [newComment, setNewComment] = useState("");
 
-//   useEffect(() => {
-//     getUrlAndCommentsById(id)
-//       .then((data) => {
-//         setAppLink(data.appLink);
-//         if (
-//           data.appLink !==
-//             "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw" &&
-//           data.commentsLink
-//         ) {
-//           setCommentsLink(data.commentsLink);
-//           setShowComments(true);
-//           getComments(data.commentsLink)
-//             .then(setComments)
-//             .catch((err) => {
-//               console.error("Error fetching comments:", err);
-//             });
-//         } else {
-//           setShowComments(false);
-//         }
-//       })
-//       .catch((err) => {
-//         console.error("Error fetching preview environment data:", err);
-//         setShowComments(false);
-//         setAppLink(
-//           "http://team5-load-balancer-1882604019.us-east-2.elb.amazonaws.com/2wdsdw"
-//         );
-//       });
-//   }, [id]);
+  const onCreateComment = async (e) => {
+    e.preventDefault();
+    await ben.postComment(repo, issue_number, newComment);
+    setNewComment("");
+    ben.getComments(repo, issue_number).then(setComments);
+  };
 
-//   const onCreateComment = async (e) => {
-//     e.preventDefault();
-//     if (commentsLink && showComments) {
-//       await postComment(newComment, commentsLink);
-//       setNewComment("");
-//       getComments(commentsLink).then(setComments);
-//     }
-//   };
-
-//   return (
-//     <>
-//       {showComments && (
-//         <div id="comments">
-//           <h1>Comments</h1>
-//           {comments.map(({ body, user }, idx) => (
-//             <Comment user={user} comment={body} key={idx} />
-//           ))}
-//           <form onSubmit={onCreateComment}>
-//             <label htmlFor="newComment">New Comment:</label>
-//             <input
-//               id="newComment"
-//               type="text"
-//               value={newComment}
-//               onChange={(e) => setNewComment(e.target.value)}
-//             />
-//             <button type="submit">Post Comment</button>
-//           </form>
-//         </div>
-//       )}
-//       <iframe src={appLink} title="Preview"></iframe>
-//     </>
-//   );
-// }
-
-
-function CommentsContainer() {
   return (
     <div id="comments-container">
       <h1>Comments</h1>
       {comments.map(({ body, user }, idx) => (
-        <Comment user={user} comment={body} key={idx} />
+        <Comment user={user.login} comment={body} key={idx} />
       ))}
       <form onSubmit={onCreateComment}>
         <label htmlFor="newComment">New Comment:</label>
@@ -100,32 +37,38 @@ function CommentsContainer() {
         />
         <button type="submit">Post Comment</button>
       </form>
-  </div>
-  )
-}
-
-function FeedbackInterface() {
-  
-
-  return (
-    <>
-      <CommentsContainer></CommentsContainer>
-    </>
-  )
+    </div>
+  );
 }
 
 function Preview({ repo, issue_number }) {
-  const previewAppLink = `https://${repo}-${issue_number}.${SUBDOMAIN}.${USER_DOMAIN}`;
+  const previewAppLink = `http://${repo}-${issue_number}.${SUBDOMAIN}.${USER_DOMAIN}`;
   return <iframe src={previewAppLink} title="Preview"></iframe>;
 }
 
 function PreviewEnvironment() {
-  const params = useParams();
+  const { repo, issue_number } = useParams();
+  const [comments, setComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      let comments = await ben.getComments(repo, issue_number);
+      setComments(comments);
+      setShowComments(true);
+      console.log(comments);
+    })();
+  }, [repo, issue_number]);
 
   return (
     <>
-      <Preview {...params} />
-      <FeedbackInterface {...params} />
+      <Preview repo={repo} issue_number={issue_number} />
+      <FeedbackInterface
+        repo={repo}
+        issue_number={issue_number}
+        comments={comments}
+        setComments={setComments}
+      />
     </>
   );
 }

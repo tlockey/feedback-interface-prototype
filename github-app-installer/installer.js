@@ -12,7 +12,6 @@
 import inquirer from "inquirer";
 import express from "express";
 import fs from "fs";
-import { debug } from "console";
 const app = express();
 const port = 3000;
 let server; // stores server object once started, used to close it later

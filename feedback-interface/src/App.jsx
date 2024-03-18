@@ -42,7 +42,7 @@ function FeedbackInterface({ repo, issue_number, comments, setComments }) {
 }
 
 function Preview({ repo, issue_number }) {
-  const previewAppLink = `http://${repo}-${issue_number}.${SUBDOMAIN}.${USER_DOMAIN}`;
+  const previewAppLink = `https://${repo}-${issue_number}.${SUBDOMAIN}.${USER_DOMAIN}`;
   return <iframe src={previewAppLink} title="Preview"></iframe>;
 }
 

@@ -1,137 +1,100 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import ben from "../ben/ben";
 import "./App.css";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
 
-const appLink = "https://rainbucket.xyz/";
-const pullRequestCommentsLink =
-  "https://api.github.com/repos/rainbucket-xyz/rainbucket/issues/17/comments";
+const SUBDOMAIN = import.meta.env.VITE_SUBDOMAIN;
+const USER_DOMAIN = import.meta.env.VITE_USER_DOMAIN;
 
-const installationLink =
-  "https://api.github.com/orgs/rainbucket-xyz/installation";
-
-const jwtLink = "http://localhost:3002/jwt";
-
-async function getComments() {
-  let response = await axios.get(pullRequestCommentsLink);
-  response = response.data;
-  return response.map((comment) => ({
-    body: comment.body,
-    user: comment.user.login,
-  }));
-}
-
-async function generateToken() {
-  const response = await axios.get(jwtLink);
-  console.log(response.data);
-  const { jwt } = response.data;
-  return jwt;
-}
-
-async function getInstallationID(jwt) {
-  const headers = {
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    Authorization: `Bearer ${jwt}`,
-  };
-
-  // Get installation ID
-  let response = await axios.get(installationLink, { headers });
-  return response.data.id;
-}
-
-async function getAuthentication() {
-  // Get JWT Token
-  const jwt = await generateToken();
-  console.log("generated jwtToken: ", jwt);
-
-  // get installation id using jwt
-  const installationID = await getInstallationID(jwt);
-  console.log("installationID: ", installationID);
-
-  const headers = {
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    Authorization: `Bearer ${jwt}`,
-  };
-
-  // get installation access token
-  const installationAccessTokenLink = `https://api.github.com/app/installations/${installationID}/access_tokens`;
-
-  let response = await axios.post(installationAccessTokenLink, null, {
-    headers,
-  });
-
-  console.log(response.data);
-  return response.data.token;
-}
-
-async function postComment(comment) {
-  let authorization = await getAuthentication();
-  console.log("authorization: ", authorization);
-  let headers = {
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    Authorization: `Bearer ${authorization}`,
-  };
-  let response = await axios.post(
-    pullRequestCommentsLink,
-    { body: comment },
-    { headers }
-  );
-  // probably update the comments in our preview interface
-}
-
-function App() {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState([]);
-
-  useEffect(() => {
-    getComments().then((comments) => setComments(comments));
-    getAuthentication();
-  }, []);
+function FeedbackInterface({ repo, issue_number, comments, setComments }) {
+  const [newComment, setNewComment] = useState("");
 
   const onCreateComment = async (e) => {
     e.preventDefault();
-    await postComment(newComment);
+    await ben.postComment(repo, issue_number, newComment);
     setNewComment("");
+    ben.getComments(repo, issue_number).then(setComments);
   };
 
   return (
-    <>
-      <div id="comments">
-        <h1>Comments</h1>
-
-        {comments.map(({ body, user }, idx) => (
-          <Comment user={user} comment={body} key={idx} />
-        ))}
-
-        <form onSubmit={onCreateComment}>
-          <label for="newComment">New Comment: </label>
-          <input
-            id="newComment"
-            type="text"
-            value={newComment}
-            onChange={(e) => {
-              setNewComment(e.target.value);
-            }}
-          />
-          <button type="submit">Post Comment</button>
-        </form>
-      </div>
-
-      <iframe src={appLink}></iframe>
-    </>
+    <div id="comments-container">
+      <h1>Comments</h1>
+      {comments.map(({ body, user }, idx) => (
+        <Comment user={user.login} comment={body} key={idx} />
+      ))}
+      <form onSubmit={onCreateComment}>
+        <label htmlFor="newComment">New Comment:</label>
+        <input
+          id="newComment"
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+        />
+        <button type="submit">Post Comment</button>
+      </form>
+    </div>
   );
 }
 
+function Preview({ repo, issue_number }) {
+  const previewAppLink = `https://${repo}-${issue_number}.${SUBDOMAIN}.${USER_DOMAIN}`;
+  return <iframe src={previewAppLink} title="Preview"></iframe>;
+}
+
+function PreviewEnvironment() {
+  const { repo, issue_number } = useParams();
+  const [comments, setComments] = useState([]);
+  const [showComments, setShowComments] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      let comments = await ben.getComments(repo, issue_number);
+      setComments(comments);
+      setShowComments(true);
+      console.log(comments);
+    })();
+  }, [repo, issue_number]);
+
+  return (
+    <>
+      <Preview repo={repo} issue_number={issue_number} />
+      <FeedbackInterface
+        repo={repo}
+        issue_number={issue_number}
+        comments={comments}
+        setComments={setComments}
+      />
+    </>
+  );
+}
 function Comment({ user, comment }) {
   return (
     <>
       <p>
-        {comment} -{user}
+        {comment} - {user}
       </p>
       <hr />
     </>
+  );
+}
+
+function Dashboard() {
+  return <p>This is your dashboard page.</p>;
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />}></Route>
+        <Route path="/:repo/:issue_number" element={<PreviewEnvironment />} />
+      </Routes>
+    </Router>
   );
 }
 
